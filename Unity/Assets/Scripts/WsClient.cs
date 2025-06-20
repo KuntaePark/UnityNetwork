@@ -1,7 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using WebSocketSharp;
+using Newtonsoft.Json;
+using DataForm;
+
+//plugin for websocket support in webgl builds
+using HybridWebSocket;
 
 public class WsClient : MonoBehaviour
 {
@@ -10,42 +14,44 @@ public class WsClient : MonoBehaviour
     private string playerId;
     public string PlayerId{ get; set; }
 
-    [System.Serializable]
-    public class Packet
-    {
-        public string type;
-        public string payload;
-    }
-
     private PlayerManager playerManager;
 
     void Start()
     {
-        ws = new WebSocket("ws://localhost:7777");
+        ws = WebSocketFactory.CreateInstance("ws://192.168.0.51:7777");
         ws.Connect();
 
-        ws.OnOpen += (sender, e) => Debug.Log("Connected to " + ((WebSocket)sender).Url);
+        ws.OnOpen += () => Debug.Log("Connected");
         ws.OnMessage += Call;
 
         playerManager = GameObject.Find("PlayerManager").GetComponent<PlayerManager>();
     }
 
-    void Call(object sender, MessageEventArgs e)
+    private void OnDestroy()
     {
-        //Debug.Log("주소 :  " + ((WebSocket)sender).Url + ", 데이터 : " + e.Data);
-        Packet packet = JsonUtility.FromJson<Packet>(e.Data);
+        if(ws != null)
+        {
+            ws.Close();
+            Debug.Log("WebSocket connection closed.");
+        }
+    }
+    void Call(byte[] message)
+    {
+        string JsonData = System.Text.Encoding.UTF8.GetString(message);
+        Packet packet = JsonConvert.DeserializeObject<Packet>(JsonData);
         switch(packet.type)
         {
             case "playerId":
                 //receive assigned player ID
                 PlayerId = packet.payload;
                 Debug.Log("Assigned Player ID: " + PlayerId);
-                //if assigned, create a player object
-                //playerManager.createSelf(PlayerId);
                 break;
             case "playerUpdate":
                 //handle player update
                 playerManager.updatePlayers(packet.payload);
+                break;
+            case "playerExit":
+                playerManager.exitPlayer(packet.payload);
                 break;
             default:
                 Debug.LogWarning("Unknown packet type: " + packet.type);
@@ -55,14 +61,15 @@ public class WsClient : MonoBehaviour
 
     public void Send(string type, string JSONMessage)
     {
-        if(ws != null && ws.IsAlive)
+        if(ws != null && ws.GetState() == WebSocketState.Open)
         {
             Packet sendPacket = new Packet
             {
                 type = type,
                 payload = JSONMessage
             };
-            ws.Send(JsonUtility.ToJson(sendPacket));
+            byte[] data = System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(sendPacket));
+            ws.Send(data);
             Debug.Log("Sent packet type: " + type + ", payload: " + JSONMessage);
         }
         else

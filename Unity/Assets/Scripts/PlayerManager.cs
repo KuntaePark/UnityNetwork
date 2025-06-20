@@ -1,29 +1,45 @@
 using System;
 using System.Collections;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using UnityEngine;
+using DataForm;
 
 //manages player objects in the game
 public class PlayerManager : MonoBehaviour
 {
     private Dictionary<string, GameObject> players = new Dictionary<string, GameObject>(); // Dictionary to hold player objects by their ID
-    private Dictionary<string, Vector2> serverPositions = new Dictionary<string, Vector2>(); // Dictionary to hold player positions from the server
+    private Dictionary<string, Vector2Data> serverPositions = new Dictionary<string, Vector2Data>(); // Dictionary to hold player positions from the server
+    private Queue<string> playerExitQueue = new Queue<string>(); // Queue to handle player exits
+
 
     public GameObject playerPrefab; // Prefab for player objects
 
+    public float smoothFactor = 10.0f;
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
+        //remove players that are queued for exit
+        while (playerExitQueue.Count > 0)
+        {
+            string playerId = playerExitQueue.Dequeue();
+            if (players.ContainsKey(playerId))
+            {
+                Debug.Log("Removing player: " + playerId);
+                Destroy(players[playerId]);
+                players.Remove(playerId);
+            }
+        }
+
         //compare player positions and update them if necessary. if a player is not in the dictionary, create a new player object
         foreach (var kv in serverPositions)
         {
-            Debug.Log("Updating player: " + kv.Key + " with position: " + kv.Value);
             string playerId = kv.Key;
             Vector3 position = new Vector3(kv.Value.x, kv.Value.y, 0);
             if (!players.ContainsKey(playerId))
@@ -41,24 +57,20 @@ public class PlayerManager : MonoBehaviour
                 players[playerId].transform.position = Vector2.Lerp(
                     players[playerId].transform.position,
                     position,
-                    Time.deltaTime
+                    Time.deltaTime * smoothFactor
                 );
             }
         }
     }
 
-    //public void createSelf(string PlayerId)
-    //{
-    //    Debug.Log("Creating self");
-    //    GameObject myPlayer = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
-    //    myPlayer.GetComponent<PlayerController>().Id = PlayerId; // Set the player ID
-    //    players.Add(PlayerId, myPlayer); // Add the player to the dictionary
-    //}
-
     public void updatePlayers(string JSONData)
     {
-        Debug.Log("Json Data: " + JSONData);
-        serverPositions = JsonUtility.FromJson<Dictionary<string, Vector2>>(JSONData);
-       
+        serverPositions = JsonConvert.DeserializeObject<Dictionary<string, Vector2Data>>(JSONData);
+
+    }
+
+    public void exitPlayer(string playerId)
+    {
+        playerExitQueue.Enqueue(playerId);
     }
 }
