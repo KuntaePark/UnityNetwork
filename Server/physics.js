@@ -23,3 +23,8 @@ function checkCollision(p1, p2) {
     const diffY = Math.abs(p1.y - p2.y);
     return (diffX ** 2 + diffY ** 2) <= (colliderRadius * 2) ** 2;
 }
+
+//calculate distance squared
+function squareDistance(p1, p2) {
+    return (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;
+}
