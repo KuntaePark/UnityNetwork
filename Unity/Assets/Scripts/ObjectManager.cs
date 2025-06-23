@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class ObjectManager : MonoBehaviour
 {
-    //control object positions and states int the game
+    //control object positions and states in the game
+    Dictionary<int, GameObject> objects = new Dictionary<int, GameObject>();
 
     // Start is called before the first frame update
     void Start()

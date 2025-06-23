@@ -12,6 +12,7 @@ public class WsClient : MonoBehaviour
     // Start is called before the first frame update
     private WebSocket ws;
     private string playerId;
+    private int lobbyId;
     public string PlayerId{ get; set; }
 
     private PlayerManager playerManager;
@@ -39,12 +40,14 @@ public class WsClient : MonoBehaviour
     {
         string JsonData = System.Text.Encoding.UTF8.GetString(message);
         Packet packet = JsonConvert.DeserializeObject<Packet>(JsonData);
-        switch(packet.type)
+        switch (packet.type)
         {
-            case "playerId":
+            case "lobbyEnterSuccess":
                 //receive assigned player ID
-                PlayerId = packet.payload;
-                Debug.Log("Assigned Player ID: " + PlayerId);
+                Dictionary<string, string> idInfo = JsonConvert.DeserializeObject<Dictionary<string, string>>(packet.payload);
+                Debug.Log("Assigned Player ID: " + idInfo["playerId"] + ", lobbyId: " + idInfo["lobbyId"]);
+                PlayerId = idInfo["playerId"];
+                lobbyId = int.Parse(idInfo["lobbyId"]);
                 break;
             case "playerUpdate":
                 //handle player update
@@ -70,7 +73,7 @@ public class WsClient : MonoBehaviour
             };
             byte[] data = System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(sendPacket));
             ws.Send(data);
-            Debug.Log("Sent packet type: " + type + ", payload: " + JSONMessage);
+            //Debug.Log("Sent packet type: " + type + ", payload: " + JSONMessage);
         }
         else
         {

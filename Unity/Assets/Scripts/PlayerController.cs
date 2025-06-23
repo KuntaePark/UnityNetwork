@@ -45,56 +45,25 @@ public class PlayerController : MonoBehaviour
                 isTestDummy = !isTestDummy;
             }
             
+            if(Input.GetKeyDown("z"))
+            {
+                //interact request
+                Debug.Log("interact");
+            }
+
             if(!isTestDummy)
             {
                 axisH = Input.GetAxisRaw("Horizontal");
                 axisV = Input.GetAxisRaw("Vertical");
-                if(axisH != 0 || axisV != 0)
-                {
-                    wsClient.Send("input", JsonConvert.SerializeObject(new Vector2Data(axisH, axisV)));
-                }
             }
             else
             {
-                switch (curState)
-                {
-                    case "break":
-                        if (currentTime < breakTime)
-                        {
-                            currentTime += Time.deltaTime;
-                            axisH = 0;
-                            axisV = 0;
-                        }
-                        else
-                        {
-                            int hIndex = UnityEngine.Random.Range(0, Hinputs.Length);
-                            int vIndex = UnityEngine.Random.Range(0, Vinputs.Length);
-                            axisH = Hinputs[hIndex];
-                            axisV = Vinputs[vIndex];
-                            curState = "move";
-                            currentTime = 0;
-                            moveTime = UnityEngine.Random.Range(0.1f, maxMoveTime);
-                        }
-                        break;
-                    case "move":
-                        if (currentTime < moveTime)
-                        {
-                            currentTime += Time.deltaTime;
-                        }
-                        else
-                        {
-                            currentTime = 0;
-                            curState = "break";
-                        }
-                        break;
-                
-                }
+                dummyMovement();
+            }
 
-
-                if (axisH != 0 || axisV != 0)
-                {
-                    wsClient.Send("input", JsonConvert.SerializeObject(new Vector2Data(axisH, axisV)));
-                }
+            if (axisH != 0 || axisV != 0)
+            {
+                wsClient.Send("inputMove", JsonConvert.SerializeObject(new Vector2Data(axisH, axisV)));
             }
         }
     }
@@ -103,4 +72,42 @@ public class PlayerController : MonoBehaviour
     {
         transform.Translate(new Vector3(axisH, axisV, 0) * speed * Time.deltaTime);
     }
+
+    private void dummyMovement()
+    {
+        switch (curState)
+        {
+            case "break":
+                if (currentTime < breakTime)
+                {
+                    currentTime += Time.deltaTime;
+                    axisH = 0;
+                    axisV = 0;
+                }
+                else
+                {
+                    int hIndex = UnityEngine.Random.Range(0, Hinputs.Length);
+                    int vIndex = UnityEngine.Random.Range(0, Vinputs.Length);
+                    axisH = Hinputs[hIndex];
+                    axisV = Vinputs[vIndex];
+                    curState = "move";
+                    currentTime = 0;
+                    moveTime = UnityEngine.Random.Range(0.1f, maxMoveTime);
+                }
+                break;
+            case "move":
+                if (currentTime < moveTime)
+                {
+                    currentTime += Time.deltaTime;
+                }
+                else
+                {
+                    currentTime = 0;
+                    curState = "break";
+                }
+                break;
+
+        }
+    }
+
 }
