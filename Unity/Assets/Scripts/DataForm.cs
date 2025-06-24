@@ -2,6 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+ * Collection of data format classes. 
+ */
+
 namespace DataForm
 {
     [System.Serializable]
@@ -25,4 +29,23 @@ namespace DataForm
             this.y = y;
         }
     }
+
+    [System.Serializable]
+    //item data received from the server
+    public class ItemData : ScriptableObject
+    {
+        private long itemId;
+        public long ItemId { get; set; }
+
+        private string itemName;
+        public string ItemName { get; set; }
+
+        private string itemDescription;
+        public string ItemDescription { get; set; }
+
+        private string itemImgPath;
+        public string ItemImgPath { get; set; }
+
+    }
+
 }

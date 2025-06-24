@@ -68,7 +68,7 @@ wss.on('connection', function connection(ws) {
       console.log("connection closed on " + id +", in lobby "+ lobbyId);
       delete lobbies[lobbyId]["members"][id];
       lobbies[lobbyId].memberCount--;
-      console.log("Current lobby member count: "+ lobbies[lobbyId].memberCount);
+      console.log("Current lobby member count of lobby "+ lobbyId + ": "+ lobbies[lobbyId].memberCount);
       if(lobbies[lobbyId].memberCount === 0) {
          console.log("closing lobby "+ lobbyId);
          delete lobbies[lobbyId];
