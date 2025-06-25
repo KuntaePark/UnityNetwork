@@ -1,12 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class ObjectManager : MonoBehaviour
+using UnityEngine.UI;
+public class TestDisplay : MonoBehaviour
 {
-    //control object positions and states in the game
-    Dictionary<int, GameObject> objects = new Dictionary<int, GameObject>();
-
+    public Text[] displays;
+    
     // Start is called before the first frame update
     void Start()
     {

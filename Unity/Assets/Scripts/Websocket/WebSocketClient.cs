@@ -16,13 +16,18 @@ public abstract class WebSocketClient : MonoBehaviour
     {
         ws = WebSocketFactory.CreateInstance(serverUrl);
         ws.Connect();
-        ws.OnOpen += () => Debug.Log("Connected to WebSocket server at " + serverUrl);
+        ws.OnOpen += () =>
+        {
+            handleOpen();
+            Debug.Log("Connected to WebSocket server at " + serverUrl);
+        };
+
         ws.OnMessage += Call;
     }
 
     private void OnDestroy()
     {
-        if (ws != null)
+        if (ws != null && ws.GetState() == WebSocketState.Open)
         {
             handleClose();
             ws.Close();
@@ -35,6 +40,7 @@ public abstract class WebSocketClient : MonoBehaviour
     {
         string JsonData = System.Text.Encoding.UTF8.GetString(message);
         Packet packet = JsonConvert.DeserializeObject<Packet>(JsonData);
+        Debug.Log("Received: " + JsonData);
         handlePacket(packet.type, packet.payload);
     }
 
@@ -61,6 +67,12 @@ public abstract class WebSocketClient : MonoBehaviour
     //수신 패킷 처리 메소드. 오버라이딩하여 사용
     public abstract void handlePacket(string type, string payload);
 
+    //웹 소켓 연결 성공 시 호출되는 메소드. 기본 구현은 아무 작업도 하지 않음.
+    public virtual void handleOpen()
+    {
+        return;
+    }
+    
     //웹 소켓 연결 종료 시 호출되는 메소드. 기본 구현은 아무 작업도 하지 않음.
     public virtual void handleClose()
     {

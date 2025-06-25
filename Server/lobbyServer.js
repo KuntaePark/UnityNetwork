@@ -46,7 +46,7 @@ wss.on('connection', function connection(ws) {
       const dataobj = JSON.parse(data);
       
       const now = new Date(Date.now());
-      // console.log("[" + now.toUTCString()+"]" + " incoming message, type: ", dataobj.type);
+      //console.log("[" + now.toUTCString()+"]" + " incoming message, type: ", dataobj.type);
 
       switch(dataobj.type) {
          case "inputMove":
