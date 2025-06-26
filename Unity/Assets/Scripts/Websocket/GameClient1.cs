@@ -19,7 +19,7 @@ public class GameClient1 : WebSocketClient
     void Start()
     {
         //서버 연결
-        startConnection("ws://localhost:7778");
+        startConnection("ws://192.168.0.51:7778");
     }
 
     // Update is called once per frame
@@ -27,22 +27,20 @@ public class GameClient1 : WebSocketClient
     {
     }
 
-    public override void handleOpen()
-    {
-        //세션이 이미 생성되어 있는 상태에서 해당 세션에 입장 요청
-        string message = JsonConvert.SerializeObject(new { sessionId, playerId });
-        Debug.Log(message);
-        Send("enterSession", message);
-    }
-
     public override void handlePacket(string type, string payload)
     {
         switch (type) 
         {
-            case "sessionId":
+            case "createSession":
                 //서버로부터 세션 ID를 받았을 때
-                sessionId = payload;
-                Debug.Log("Received session ID: " + sessionId);
+                Dictionary<string, string> sessionData = JsonConvert.DeserializeObject<Dictionary<string, string>>(payload);
+                sessionId = sessionData["sessionId"];
+                playerId = sessionData["playerId"];
+                Debug.Log("Session created with ID: " + sessionId + ", Player ID: " + playerId);
+                break;
+            case "gameState":
+                //게임 상태 업데이트를 받았을 때
+                Debug.Log("received game state");
                 break;
             default:
                 Debug.LogWarning("Unknown packet type: " + type);

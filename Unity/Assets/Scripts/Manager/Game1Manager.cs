@@ -12,19 +12,13 @@ public class Game1Manager : MonoBehaviour
         //기본 수치
         public float hp = 100f;
         public float mp = 0f;
-        public float atk = 2f;
         public int strengthLevel = 0;
-        public string currentAction = "attack";
-        public string skillId = "heal";
+        public bool isActionSelected = false;
 
         //단어 관련
         public string currentWord = "";
-        public string options = "";
+        public int[] options = new int[4];
         public int correctIdx = -1;
-
-        //특수
-        public float shieldRate = 0f;
-
     }
 
     PlayerData[] players = new PlayerData[2]; // 플레이어 2명 관리
