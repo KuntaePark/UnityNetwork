@@ -1,9 +1,8 @@
 /*
  * 게임 세션 정보 저장 클래스.
  */
-const {Player} = require('./Player')
-
-const deltaTime = 0.016;
+const {Player} = require('./Player');
+const {deltaTime} = require('./GameLogic');
 
 class Session {
     static sessionCount = 0;
@@ -21,7 +20,7 @@ class Session {
         this.usedWords = [];   //해당 라운드에서 사용된 단어들
         
         //상대 판정 쉽게 하기 위해 배열로 저장
-        this.players = [new Player(playerId1, this), new Player(playerId2, this)]; //2인
+        this.players = [new Player(0,playerId1, this), new Player(1, playerId2, this)]; //2인
     }
 
     //게임 시작 시 호출
@@ -97,7 +96,10 @@ class Session {
 
     //게임 상태 전송용
     toJSON() {
-        return 'test';
+        return {
+            startTime: this.startTime,
+            players: this.players
+        }
     }
 }
 

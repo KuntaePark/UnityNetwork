@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
+using System;
 
 public class Game1InputController : MonoBehaviour
 {
@@ -13,11 +14,12 @@ public class Game1InputController : MonoBehaviour
     }
 
 
+    public Game1Manager game1Manager; //게임 매니저 스크립트 참조
 
     //유저 입력을 받아 서버에 전달
     public GameClient1 gameClient;
     public ActionType actionType = ActionType.ATTACK;
-    public bool isActionSelected = false;
+   
 
     private float inputDelay = 0.2f; //입력 딜레이 시간
     private float lastInputTime = 0f; //마지막 입력 시간
@@ -33,6 +35,15 @@ public class Game1InputController : MonoBehaviour
     {
         float axisH = Input.GetAxisRaw("Horizontal");
         float axisV = Input.GetAxisRaw("Vertical");
+        bool isActionSelected = false; //액션 선택 상태 초기화
+        if (game1Manager.myIndex == -1)
+        {
+            //아직 플레이어 인덱스가 설정되지 않았으면 무시
+            isActionSelected = false;
+        } else
+        {
+            isActionSelected = game1Manager.gameState.players[game1Manager.myIndex].isActionSelected; //액션 선택 상태
+        }
 
         //입력 처리, input.type 종류: chargeMana, actionSelect, actionCancek, wordSelect 
         if (Input.GetButton("Fire2"))

@@ -24,6 +24,7 @@ wss.on('connection', function connection(ws) {
     //임시 매칭, 들어오는대로 세션 생성
     const id = generateId();
     ws["id"] = id;
+    console.log(`user ${id} connected`);
     playerQueue.push(ws);
     //세션 생성
     if(playerQueue.length === 2) {
@@ -45,25 +46,20 @@ wss.on('connection', function connection(ws) {
 
 //세션 생성 함수. 임시로 들어오는대로 세션 생성
 function createSession() {
-    const p1ws = playerQueue.pop();
-    const p2ws = playerQueue.pop();
+    const players = [playerQueue.pop(), playerQueue.pop()];
     
-    const session = new Session(p1ws.id, p2ws.id);
-    session.setPlayerConnection(p1ws);
-    session.setPlayerConnection(p2ws);
+    const session = new Session(players[0].id, players[1].id);
     console.log(`session ${session.id} created`);
-    p1ws['sessionId'] = session.id;
-    p2ws['sessionId'] = session.id;
     sessions.set(session.id, session);
+    for(const player of players) {
+        session.setPlayerConnection(player);
+        player['sessionId'] = session.id;
+        const message =JSON.stringify({type: 'createSession', payload: JSON.stringify(
+            {sessionId: session.id, playerId: player.id}
+        )});
+        player.send(message);
+    }
 
-    const message1 =JSON.stringify({type: 'createSession', payload: JSON.stringify(
-        {sessionId: session.id, playerId: p1ws.id}
-    )})
-    const message2 =JSON.stringify({type: 'createSession', payload: JSON.stringify(
-        {sessionId: session.id, playerId: p2ws.id}
-    )})
-    p1ws.send(message1);
-    p2ws.send(message2);
     //테스트를 위해 바로 게임 시작
     session.gameStart();
 }
@@ -79,7 +75,7 @@ const handlePacket = {
 function handleInput(ws, payload) {
     const playerId = ws.id;
     const sessionId = ws.sessionId;
-    console.log(`input by playerId ${playerId} in session ${sessionId}`)
+    // console.log(`input by playerId ${playerId} in session ${sessionId}`)
     const player = sessions.get(sessionId).getPlayer(playerId);
     const inputData = JSON.parse(payload);
     player.setInput(inputData);

@@ -12,7 +12,9 @@ using DataForm;
 public class GameClient1 : WebSocketClient
 {
     private string sessionId; //서버로부터 배정받은 세션 ID
-    private string playerId; //서버로부터 배정받은 플레이어 ID
+
+    public string PlayerId { get; private set; } //플레이어 ID (서버로부터 배정받음)
+    public Game1Manager game1Manager; //게임 매니저 스크립트 참조
 
 
     // Start is called before the first frame update
@@ -35,12 +37,13 @@ public class GameClient1 : WebSocketClient
                 //서버로부터 세션 ID를 받았을 때
                 Dictionary<string, string> sessionData = JsonConvert.DeserializeObject<Dictionary<string, string>>(payload);
                 sessionId = sessionData["sessionId"];
-                playerId = sessionData["playerId"];
-                Debug.Log("Session created with ID: " + sessionId + ", Player ID: " + playerId);
+                PlayerId = sessionData["playerId"];
+                Debug.Log("Session created with ID: " + sessionId + ", Player ID: " + PlayerId);
                 break;
             case "gameState":
                 //게임 상태 업데이트를 받았을 때
-                Debug.Log("received game state");
+                Debug.Log("received: " + payload);
+                game1Manager.UpdateGameState(payload);
                 break;
             default:
                 Debug.LogWarning("Unknown packet type: " + type);

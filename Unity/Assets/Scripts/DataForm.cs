@@ -48,4 +48,48 @@ namespace DataForm
 
     }
 
+    [System.Serializable]
+    public class wordData
+    {
+        public long expr_id = -1;
+        public string word_text = "";
+        public string meaning = "";
+        public int difficulty = -1;
+    }
+
+    [System.Serializable]
+    public class PlayerData
+    {
+        //기본 수치
+        public string id = ""; //플레이어 ID, 서버로부터 배정받음
+        public float hp = -1;
+        public float mp = -1;
+        public int strengthLevel = -1;
+        public bool isActionSelected = false;
+
+        //단어 관련
+        public wordData[] words = null;
+        public int correctIdx = -1;
+
+        public override string ToString()
+        {
+            string wordString = "Words: ";
+            if(words != null)
+            {
+                for(int i = 0; i < words.Length; i++)
+                {
+                    wordString += $"{words[i].word_text}, 뜻: {words[i].meaning}\n";
+                }
+            }
+
+            return $"Player ID: {id}\n" +
+                $"HP: {hp}\nMP: {mp}\n" +
+                $"Strength Level: {strengthLevel}\n" +
+                $"{wordString}\n" +
+                $"Correct Index: {correctIdx}\n" +
+                $"Is Action Selected: {isActionSelected}";
+
+        }
+    }
 }
+
