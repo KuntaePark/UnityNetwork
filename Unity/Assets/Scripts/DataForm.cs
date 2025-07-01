@@ -67,6 +67,7 @@ namespace DataForm
         public float mp = -1;
         public int strengthLevel = -1;
         public bool isActionSelected = false;
+        public string currentAction = "";
 
         //단어 관련
         public wordData[] words = null;
@@ -74,12 +75,13 @@ namespace DataForm
 
         public override string ToString()
         {
-            string wordString = "Words: ";
-            if(words != null)
+            string wordString = "";
+            if(words != null && isActionSelected)
             {
+                wordString += $"현재 단어: {words[correctIdx].word_text} \n";
                 for(int i = 0; i < words.Length; i++)
                 {
-                    wordString += $"{words[i].word_text}, 뜻: {words[i].meaning}\n";
+                    wordString += $"뜻{i}: {words[i].meaning}\n";
                 }
             }
 

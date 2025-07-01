@@ -4,6 +4,8 @@
 const {WordDB} = require('./WordDB');
 const {deltaTime, skills, useSkill} = require('./GameLogic');
 
+const maxStrengthLevel = 5;
+
 const wordDB = new WordDB();
 wordDB.getWordData();
 
@@ -19,8 +21,8 @@ class Player {
         //기본 수치
         this.hp = 100;                  //체력
         this.mp = 0;                    //마나
-        this.unitMana = 5;              //초당 마나 회복량
-        this.atk = 3;                   //기초공
+        this.unitMana = 4;              //초당 마나 회복량
+        this.atk = 5;                   //기초공
         this.strengthLevel = 0;         //현재 행동 강도
         this.skillId = "heal";          //선택 스킬 종류, 기본값 회복
         
@@ -36,7 +38,7 @@ class Player {
         this.shieldRate = 0.0;          //방어 데미지 감소율, 한턴 유효
     }
 
-    do(deltaTime) {
+    doAction() {
         const type = this.inputData.type;
         inputActions[type](this, deltaTime);
         this.inputData = null;
@@ -68,6 +70,17 @@ class Player {
         }
     }
 
+    //스킬 사용 연산 처리
+    activateSkill() {
+        const opponent = this.session.players[1-this.idx];
+
+        const skillName = this.getSkillName(this.currentAction);
+        useSkill(this, opponent, skillName);
+        this.isActionSelected = false;
+        this.resetWords();
+        this.strengthLevel = 0;
+    }
+
     toJSON() {
         return {
             id: this.id,
@@ -76,6 +89,7 @@ class Player {
             mp: this.mp,
             strengthLevel: this.strengthLevel,
             isActionSelected: this.isActionSelected,
+            currentAction: this.currentAction,
             words: this.words,
             correctIdx: this.correctIdx     
         }
@@ -87,6 +101,7 @@ class Player {
  */
 const inputActions = {
     'chargeMana': (user) => {
+        if(user.isActionSelected) return;
         user.mp = Math.min(user.mp + deltaTime * user.unitMana,10);
         console.log(`user ${user.id} charged mana : ${user.mp}`)
     },
@@ -94,7 +109,7 @@ const inputActions = {
         //행동 선택, 단어 맞추기 페이즈로
         const action = user.inputData.action;
         const skillName = user.getSkillName(action);
-        //최소 요구 마나량 확인, 요구량 보다 작을 시 행동 선택 안됨
+        //최소 요구 마나량 확인, 요구량 보다 마나량 작을 시 행동 선택 안됨
         const minMana = skills[skillName].minMana;
         if(minMana > user.mp) {
             console.log('not enough mp');
@@ -107,6 +122,20 @@ const inputActions = {
         user.loadWords();
 
     },
+    'actionConfirm': (user) => {
+        //행동 조기 실행. 현재까지의 강도로 실행
+        const action = user.currentAction;
+        const skillName = user.getSkillName(action);
+        //최소 소모 마나 확인, 현재 강도보다 클 시 시행 불가
+        const minMana = skills[skillName].minMana;
+        if(minMana > user.strengthLevel) {
+            console.log('strengthlevel not enough');
+            return;
+        }
+        console.log(`user ${user.id} do actionConfirm`);
+
+        user.activateSkill();
+    },
     'actionCancel': (user) => {
         //행동 취소, 아무 마나 소모 없음
         console.log(`user ${user.id} do actionCancel`);
@@ -118,23 +147,20 @@ const inputActions = {
         console.log(`user ${user.id} do wordSelect`);
         const idx = user.inputData.idx;
 
+        console.log("str lev: "+ user.strengthLevel);
         if(idx === user.correctIdx && 
-            user.strengthLevel < 10 && 
+            user.strengthLevel < maxStrengthLevel && 
             Math.floor(user.mp) > user.strengthLevel) {
             user.strengthLevel++;
             //단어 맞추면 즉시 다음 단어 로드
-            user.loadWords(Math.floor(user.strengthLevel / 2)+1);
-        
+            if(user.strengthLevel == maxStrengthLevel || Math.floor(user.mp) == user.strengthLevel) {
+                user.activateSkill();
+            } else {
+                user.loadWords(user.strengthLevel);
+            }
         } else {
             //틀리거나, 강도가 10에 도달하거나, 강도가 사용 가능한 최대 마나일 경우 행동 계산
-            const opponent = user.session.players[1-user.idx];
-            
-            const skillName = user.getSkillName(user.currentAction);
-
-            useSkill(user, opponent, skillName);
-            user.isActionSelected = false;
-            user.resetWords();
-            user.strengthLevel = 0;
+            user.activateSkill();
         }
     }
 }

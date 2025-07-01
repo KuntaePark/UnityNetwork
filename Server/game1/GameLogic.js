@@ -39,7 +39,7 @@ const skillBehaviors = {
     },
     heal: (user, _, skill) => {
         const healAmount = skill.unitHeal * user.strengthLevel;
-        user.hp = Math.min(10, user.hp + healAmount);
+        user.hp = Math.min(100, user.hp + healAmount);
     }
 }
 Object.freeze(skillBehaviors);

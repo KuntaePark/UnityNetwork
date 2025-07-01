@@ -13,6 +13,7 @@ public class Game1Manager : MonoBehaviour
     public class GameState
     {
         public long startTime { get; set; } //게임 시작 시간
+        public string state = "ready";
         public PlayerData[] players { get; set; } = new PlayerData[2]; //플레이어 데이터 배열
     }
 
@@ -20,7 +21,7 @@ public class Game1Manager : MonoBehaviour
     public GameState gameState; //게임 상태 데이터
     public int myIdx = -1;
 
-    const int timeLimit = 99; //게임 시간 제한(초)
+    public const int timeLimit = 99; //게임 시간 제한(초)
 
     public Text player1Data;
     public Text player2Data;
@@ -35,9 +36,7 @@ public class Game1Manager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        player1Data.text = gameState.players[0].ToString();
-        player2Data.text = gameState.players[1].ToString();
-        commonData.text = $"Time: {getTimesLeft()}\n" + $"my index: {myIdx}";
+
     }
 
     public void UpdateGameState(string payload)
@@ -65,7 +64,8 @@ public class Game1Manager : MonoBehaviour
         //게임 종료 처리
         Debug.Log("Game ended. Winner index: " + winnerIdx);
         gameState.startTime = 0;
-        if(winnerIdx == myIdx)
+        gameState.state = "end";
+        if (winnerIdx == myIdx)
         {
             Debug.Log("You win!");
         }

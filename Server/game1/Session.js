@@ -19,7 +19,7 @@ class Session {
         this.startTime = null; //게임 시작 시간
 
         //게임 상태: ready: 대기, countdown: 카운트다운, running: 게임중, end: 게임종료
-        this.gameState = "ready";
+        this.state = "ready";
         this.usedWords = [];   //해당 라운드에서 사용된 단어들
         
         //상대 판정 쉽게 하기 위해 배열로 저장
@@ -38,6 +38,7 @@ class Session {
         console.log('game start');
         this.startTime = Date.now();
         this.intervalId = setInterval(() => this.tick(), deltaTime * 1000);
+        this.state = "start";
         this.broadcast(makePacket('gameState', this));
     }
 
@@ -49,7 +50,7 @@ class Session {
         for(const player of this.players) {
             if(player.hasInput()) {
                 //행동 수행
-                player.do(deltaTime);
+                player.doAction();
                 hasUpdate = true;
             }
         }
@@ -95,6 +96,7 @@ class Session {
             console.log("game end");
             clearInterval(this.intervalId);
             this.intervalId = null;
+            this.state = 'end';
             const message = makePacket('gameEnd', winner);
             this.broadcast(message);
         }
@@ -116,6 +118,7 @@ class Session {
     toJSON() {
         return {
             startTime: this.startTime,
+            state: this.state,
             players: this.players
         }
     }
