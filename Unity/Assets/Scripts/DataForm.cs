@@ -62,6 +62,7 @@ namespace DataForm
     {
         //기본 수치
         public string id = ""; //플레이어 ID, 서버로부터 배정받음
+        public int idx = -1;
         public float hp = -1;
         public float mp = -1;
         public int strengthLevel = -1;

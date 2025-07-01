@@ -36,13 +36,13 @@ public class Game1InputController : MonoBehaviour
         float axisH = Input.GetAxisRaw("Horizontal");
         float axisV = Input.GetAxisRaw("Vertical");
         bool isActionSelected = false; //액션 선택 상태 초기화
-        if (game1Manager.myIndex == -1)
+        if (game1Manager.myIdx == -1)
         {
             //아직 플레이어 인덱스가 설정되지 않았으면 무시
             isActionSelected = false;
         } else
         {
-            isActionSelected = game1Manager.gameState.players[game1Manager.myIndex].isActionSelected; //액션 선택 상태
+            isActionSelected = game1Manager.checkActionSelected(); //액션 선택 상태
         }
 
         //입력 처리, input.type 종류: chargeMana, actionSelect, actionCancek, wordSelect 

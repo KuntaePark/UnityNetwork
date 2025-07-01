@@ -3,11 +3,14 @@
  */
 const {Player} = require('./Player');
 const {deltaTime} = require('./GameLogic');
+const {makePacket} = require('./Packet');
+
+const timeLimit = 99; //in seconds
 
 class Session {
     static sessionCount = 0;
 
-    constructor(playerId1, playerId2) {
+    constructor(pws1, pws2) {
         //매칭 서버로부터 두 플레이어의 아이디를 받아 세션 생성
         this.id = (Session.sessionCount++).toString();
         this.intervalId = null;
@@ -20,7 +23,14 @@ class Session {
         this.usedWords = [];   //해당 라운드에서 사용된 단어들
         
         //상대 판정 쉽게 하기 위해 배열로 저장
-        this.players = [new Player(0,playerId1, this), new Player(1, playerId2, this)]; //2인
+        this.players = [new Player(0,pws1, this), new Player(1, pws2, this)]; //2인
+
+        //각 플레이어에게 세션 생성 알림 전달
+        for(const player of this.players) {
+            const payload = {sessionId: this.id, idx: player.idx};
+            const message = makePacket('createSession', payload);
+            player.socket.send(message);
+        }
     }
 
     //게임 시작 시 호출
@@ -28,6 +38,7 @@ class Session {
         console.log('game start');
         this.startTime = Date.now();
         this.intervalId = setInterval(() => this.tick(), deltaTime * 1000);
+        this.broadcast(makePacket('gameState', this));
     }
 
     //프레임 당 연산
@@ -44,41 +55,48 @@ class Session {
         }
 
         //업데이트 존재 시 브로드캐스트
-        if(hasUpdate) this.broadcastState();
+        if(hasUpdate) this.broadcast(makePacket('gameState',this));
 
         //게임 종료 체크
         this.checkGameEnd();
     }
     
-    //각 플레이어에게 상태 브로드캐스트
-    broadcastState() {
+    //각 플레이어에게 브로드캐스트
+    broadcast(message) {
         for(const player of this.players) {
-            const message = JSON.stringify({
-                type: 'gameState',
-                payload: JSON.stringify(this)
-        })
             player.socket.send(message);
         }
     }
 
     //게임 종료 체크
     checkGameEnd() {
-
-    }
-
-    //해당 플레이어의 소켓 배정
-    setPlayerConnection(ws) {
-        const id = ws.id;
-        let player = null;
-        for(const p of this.players) {
-            if(p.id === id) {
-                player = p;
+        const now = Date.now();
+        //시간 체크
+        let winner = -1;
+        if(now - this.startTime >= timeLimit * 1000) {
+            //게임 끝
+            console.log("game end by timeover");
+            if(this.players[0].hp > this.players[1].hp) {
+                winner = 0;
+            } else if(this.players[0].hp < this.players[1].hp) {
+                winner = 1;
+            } else {
+                //draw
+                winner = 2;
             }
+        } else if(this.players[0].hp === 0) {
+            //게임 끝
+            winner = 1;
+        } else if(this.players[1].hp === 0) {
+            //게임 끝
+            winner = 0;
         }
-        if(player) {
-            player.socket = ws;
-        } else {
-            console.log("no such player");
+        if(winner >= 0) {
+            console.log("game end");
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+            const message = makePacket('gameEnd', winner);
+            this.broadcast(message);
         }
     }
 
@@ -91,7 +109,7 @@ class Session {
     }
 
     close() {
-        clearInterval(this.intervalId);   
+        if(this.intervalId) clearInterval(this.intervalId);
     }
 
     //게임 상태 전송용

@@ -46,11 +46,16 @@ class WordDB {
 
     //4개의 같은 난이도의 단어를 랜덤으로 선택해 반환
     pick4 (difficulty) {
-        const words = [];
-        for(let i = 0; i < 4; i++) {
-            words.push(this.pickRandom(difficulty));
+        const words = new Map();
+        while(words.size < 4) {
+            const word = this.pickRandom(difficulty);
+            if(!words.has(word.expr_id)) {
+                words.set(word.expr_id, word);
+            } else {
+                continue;
+            }
         }
-        return words;
+        return Array.from(words.values());
     }
 }
 

@@ -1,7 +1,5 @@
 //======== 행동 정의 ========
 //스킬 종류 및 스킬 관련 수치(기본 공격 및 방어 포함)
-const actions = ['ATTACK', 'DEFENSE', 'SPECIAL'];
-
 const skills = {
     attack: {
         behavior: 'attack',
@@ -40,7 +38,8 @@ const skillBehaviors = {
         user.shieldRate = user.strengthLevel * skill.unitShieldRate;
     },
     heal: (user, _, skill) => {
-        user.hp += skill.unitHeal * user.strengthLevel;
+        const healAmount = skill.unitHeal * user.strengthLevel;
+        user.hp = Math.min(10, user.hp + healAmount);
     }
 }
 Object.freeze(skillBehaviors);

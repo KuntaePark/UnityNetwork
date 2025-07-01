@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using DataForm;
@@ -17,10 +18,13 @@ public class Game1Manager : MonoBehaviour
 
     public GameClient1 gameClient; //게임 클라이언트 스크립트 참조
     public GameState gameState; //게임 상태 데이터
-    public int myIndex = -1;
+    public int myIdx = -1;
+
+    const int timeLimit = 99; //게임 시간 제한(초)
 
     public Text player1Data;
     public Text player2Data;
+    public Text commonData;
     // Start is called before the first frame update
     void Start()
     {
@@ -31,26 +35,48 @@ public class Game1Manager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        player1Data.text = gameState.players[0].ToString(); 
+        player1Data.text = gameState.players[0].ToString();
         player2Data.text = gameState.players[1].ToString();
+        commonData.text = $"Time: {getTimesLeft()}\n" + $"my index: {myIdx}";
     }
 
     public void UpdateGameState(string payload)
     {
         //게임 상태 업데이트 처리
-        
+
         gameState = JsonConvert.DeserializeObject<GameState>(payload);
-        if(myIndex == -1)
+    }
+
+    public bool checkActionSelected() { return gameState.players[myIdx].isActionSelected; }
+
+    public long getTimesLeft()
+    {
+        if (gameState.startTime == 0)
         {
-            //플레이어 ID를 통해 인덱스 설정
-            if(gameClient.PlayerId == gameState.players[0].id)
-            {
-                myIndex = 0;
-            }
-            else if(gameClient.PlayerId == gameState.players[1].id)
-            {
-                myIndex = 1;
-            }
+            //게임이 시작되지 않았으면 0 반환
+            return 0;
         }
+        DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        return timeLimit * 1000 + gameState.startTime - (long)(DateTime.UtcNow - epoch).TotalMilliseconds;
+    }
+
+    public void endGame(int winnerIdx)
+    {
+        //게임 종료 처리
+        Debug.Log("Game ended. Winner index: " + winnerIdx);
+        gameState.startTime = 0;
+        if(winnerIdx == myIdx)
+        {
+            Debug.Log("You win!");
+        }
+        else if(winnerIdx == 1 - myIdx)
+        {
+            Debug.Log("You lose!");
+        }
+        else
+        {
+            Debug.Log("It's a draw!");
+        }
+
     }
 }

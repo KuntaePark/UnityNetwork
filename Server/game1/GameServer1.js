@@ -3,9 +3,8 @@
  */
 
 const WebSocket = require('ws');
-const { deltaTime, skills, skillBehaviors, Player, GameLogic} 
-= require('./GameLogic');
 const {Session} = require('./Session');
+const {makePacket} = require('./Packet');
 const wss = new WebSocket.Server({ port: 7778 },()=>{
     console.log('GAME1 SERVER START');
 });
@@ -21,12 +20,13 @@ const idLength = 16;
 //매칭 서버에 의해 해당 유저들의 세션이 이미 생성되었다고 가정
 //todo - 매칭 서버에 의한 세션 생성 요청 및 수락 구현
 wss.on('connection', function connection(ws) {
-    //임시 매칭, 들어오는대로 세션 생성
     const id = generateId();
     ws["id"] = id;
     console.log(`user ${id} connected`);
+    const message = makePacket('connect', id);
     playerQueue.push(ws);
-    //세션 생성
+
+    //임시 매칭, 2명 들어오는대로 세션 생성
     if(playerQueue.length === 2) {
         createSession();
     }
@@ -46,19 +46,9 @@ wss.on('connection', function connection(ws) {
 
 //세션 생성 함수. 임시로 들어오는대로 세션 생성
 function createSession() {
-    const players = [playerQueue.pop(), playerQueue.pop()];
-    
-    const session = new Session(players[0].id, players[1].id);
-    console.log(`session ${session.id} created`);
+    const session = new Session(playerQueue.pop(), playerQueue.pop());
     sessions.set(session.id, session);
-    for(const player of players) {
-        session.setPlayerConnection(player);
-        player['sessionId'] = session.id;
-        const message =JSON.stringify({type: 'createSession', payload: JSON.stringify(
-            {sessionId: session.id, playerId: player.id}
-        )});
-        player.send(message);
-    }
+    console.log(`session ${session.id} created`);
 
     //테스트를 위해 바로 게임 시작
     session.gameStart();
@@ -82,9 +72,7 @@ function handleInput(ws, payload) {
 
 }
 
-//********기타 편의성 함수*********//
-function UTCTimeStamp() {return new Date(Date.now()).toUTCString();}
-
+//임시 아이디 생성 함수.
 function generateId() {
    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
    
@@ -103,3 +91,6 @@ function generateId() {
       }
    }
 }
+
+//********기타 편의성 함수*********//
+function UTCTimeStamp() {return new Date(Date.now()).toUTCString();}

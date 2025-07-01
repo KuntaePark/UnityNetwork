@@ -40,7 +40,6 @@ public abstract class WebSocketClient : MonoBehaviour
     {
         string JsonData = System.Text.Encoding.UTF8.GetString(message);
         Packet packet = JsonConvert.DeserializeObject<Packet>(JsonData);
-        Debug.Log("Received: " + JsonData);
         handlePacket(packet.type, packet.payload);
     }
 

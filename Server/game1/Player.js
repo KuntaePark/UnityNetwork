@@ -2,37 +2,38 @@
  * 게임1에서의 각 플레이어에 대한 정보를 저장하는 클래스.
  */
 const {WordDB} = require('./WordDB');
-const {deltaTime, skills, skillBehaviors, useSkill} = require('./GameLogic');
+const {deltaTime, skills, useSkill} = require('./GameLogic');
 
 const wordDB = new WordDB();
 wordDB.getWordData();
 
 class Player {
-    constructor(myIdx, playerId, session) {
-        this.id = playerId;
-        this.myIdx = myIdx; //1p인지 2p인지 인덱스 상의 위치
-        this.socket = null;
+    constructor(idx, pws, session) {
+        this.id = pws.id;
+        this.idx = idx; //1p인지 2p인지 인덱스
+        this.socket = pws; 
+        pws['sessionId'] = session.id;
         this.session = session;
         this.inputData = null;
         
         //기본 수치
-        this.hp = 100;           //체력
-        this.mp = 0;             //마나
-        this.unitMana = 2;       //초당 마나 회복량
-        this.atk = 2;            //기초공
-        this.strengthLevel = 0;  //현재 행동 강도
-        this.skillId = "heal";   //선택 스킬 종류, 기본값 회복
+        this.hp = 100;                  //체력
+        this.mp = 0;                    //마나
+        this.unitMana = 5;              //초당 마나 회복량
+        this.atk = 3;                   //기초공
+        this.strengthLevel = 0;         //현재 행동 강도
+        this.skillId = "heal";          //선택 스킬 종류, 기본값 회복
         
         //상태 관련
-        this.isActionSelected = false; //행동 결정 여부
-        this.currentAction = 'ATTACK' // 현재 행동
+        this.isActionSelected = false;  //행동 결정 여부
+        this.currentAction = 'ATTACK'   // 현재 행동
 
         //단어 관련
-        this.words = []; //단어 선택지, 4개 중 하나의 단어를 표시, 나머지는 뜻 옵션
-        this.correctIdx = -1; //정답 인덱스
+        this.words = [];                //단어 선택지, 4개 중 하나의 단어를 표시, 나머지는 뜻 옵션
+        this.correctIdx = -1;           //정답 인덱스
 
         //특수 플래그
-        this.shieldRate = 0.0;   //데미지 감소율
+        this.shieldRate = 0.0;          //방어 데미지 감소율, 한턴 유효
     }
 
     do(deltaTime) {
@@ -42,7 +43,7 @@ class Player {
     }
 
     setInput(inputData) {
-        if(!!this.inputData) return; //처리 안된 입력 있을 시 스킵
+        if(this.inputData) return; //처리 안된 입력 있을 시 스킵
         else this.inputData = inputData;        
     }
 
@@ -59,9 +60,18 @@ class Player {
         this.correctIdx = -1;
     }
 
+    getSkillName(action) {
+        if(action === 'SPECIAL') {
+            return this.skillId;
+        } else {
+            return action.toLowerCase();
+        }
+    }
+
     toJSON() {
         return {
             id: this.id,
+            idx: this.idx,
             hp: this.hp,
             mp: this.mp,
             strengthLevel: this.strengthLevel,
@@ -82,9 +92,16 @@ const inputActions = {
     },
     'actionSelect': (user) => {
         //행동 선택, 단어 맞추기 페이즈로
+        const action = user.inputData.action;
+        const skillName = user.getSkillName(action);
+        //최소 요구 마나량 확인, 요구량 보다 작을 시 행동 선택 안됨
+        const minMana = skills[skillName].minMana;
+        if(minMana > user.mp) {
+            console.log('not enough mp');
+            return;
+        }
         console.log(`user ${user.id} do actionSelect`);
 
-        const action = user.inputData.action;
         user.currentAction = action;
         user.isActionSelected = true;
         user.loadWords();
@@ -101,21 +118,18 @@ const inputActions = {
         console.log(`user ${user.id} do wordSelect`);
         const idx = user.inputData.idx;
 
-        if(idx === user.correctIdx && user.strengthLevel < 10 && Math.floor(user.mp) > user.strengthLevel) {
+        if(idx === user.correctIdx && 
+            user.strengthLevel < 10 && 
+            Math.floor(user.mp) > user.strengthLevel) {
             user.strengthLevel++;
             //단어 맞추면 즉시 다음 단어 로드
             user.loadWords(Math.floor(user.strengthLevel / 2)+1);
         
         } else {
             //틀리거나, 강도가 10에 도달하거나, 강도가 사용 가능한 최대 마나일 경우 행동 계산
-            const opponent = user.session.players[1-user.myIdx];
+            const opponent = user.session.players[1-user.idx];
             
-            let skillName = "";
-            if(user.currentAction === 'SPECIAL') {
-                skillName = user.skillId;
-            } else {
-                skillName = user.currentAction.toLowerCase();
-            }
+            const skillName = user.getSkillName(user.currentAction);
 
             useSkill(user, opponent, skillName);
             user.isActionSelected = false;
@@ -123,7 +137,6 @@ const inputActions = {
             user.strengthLevel = 0;
         }
     }
-
 }
 
 module.exports = {Player};
