@@ -169,11 +169,9 @@ var LibraryWebSocket = {
 				}
 
 			} else if (typeof ev.data == 'string') {
-				var arrBuffer = new ArrayBuffer(ev.data.length)
-				var dataBuffer = new Uint8Array(arrBuffer)
-				for (var i = 0, len = ev.data.length; i < len; i++) {
-				  dataBuffer[i] = ev.data.charCodeAt(i)
-				}
+				var encoder = new TextEncoder();  // UTF-8 encoder
+  				var dataBuffer = encoder.encode(ev.data);  // for accurate utf-8
+
 				var buffer = _malloc(dataBuffer.length);
 				HEAPU8.set(dataBuffer, buffer);
 				try {
