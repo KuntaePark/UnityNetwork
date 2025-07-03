@@ -6,8 +6,11 @@ const WebSocket = require('ws');
 const {Session} = require('./Session');
 const {makePacket} = require('./Packet');
 const wss = new WebSocket.Server({ port: 7778 },()=>{
-    console.log('GAME1 SERVER START');
+    console.log('GAME1 SERVER START ON 7778');
 });
+
+//매칭 서버 연결 저장
+let matchServerClient = null;
 
 /* [sessionId] : [Session] */
 const sessions = new Map(); //게임 세션
@@ -24,6 +27,7 @@ wss.on('connection', function connection(ws) {
     ws["id"] = id;
     console.log(`user ${id} connected`);
     const message = makePacket('connect', id);
+    //임시 매칭 큐에 저장
     playerQueue.push(ws);
 
     //임시 매칭, 2명 들어오는대로 세션 생성

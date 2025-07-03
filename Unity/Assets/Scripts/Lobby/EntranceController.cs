@@ -35,6 +35,7 @@ public class EntranceController : MonoBehaviour
             //open entrance UI
             Debug.Log("Entrance Triggered by Player");
             entranceUI.SetActive(true);
+            gameStartUI.loadGameStartUI();
         }
     }
 }

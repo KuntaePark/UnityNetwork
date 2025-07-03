@@ -1,28 +1,19 @@
 const WebSocket = require('ws');
-const express = require('express');
-const http = require('http');
 
-const app = express();
+const wss = new WebSocket.Server({port: 7779}, () => {
+    console.log('MATCH SERVER STARTED AT 7779');
+})
 
-const port = 8080;
-
-app.listen(port, function() {
-    console.log(`match server started on ${port}`);
-});
-
-//match server
-
-//매칭 요청 
-app.post("/match/join/:id", function (req, res) {
-    //id 인증 확인 필요, 임시
-    const id = req.params.id;
-    console.log('request join');
+wss.on('connection',function connection(ws) {
+   
+   
     
-});
 
-const RequestHandler = {
-    'GET': () => {},
-    'POST': () => {},
-    'PUT': () => {},
-    'DELETE': () => {},
-};
+    ws.on('message', (message) => {
+        //message
+    }); 
+
+    ws.on('close', () => {
+        //close
+    });
+});

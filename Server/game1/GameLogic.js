@@ -5,16 +5,19 @@ const skills = {
         behavior: 'attack',
         minMana: 1    
     },
+
     defense: {
         behavior: 'defense',
         unitShieldRate: 0.08, //단위 데미지 감소율
         minMana: 1
     },
+
     heal : {
         behavior: 'heal',
         unitHeal : 3, //단위 힐량
         minMana : 3 //최소 요구 힐량
     },
+    
     strengthen: { //공버프
         behavior : 'strengthen',
         unitAtkIncRate: 0.05, //단위 공격력 증가율
@@ -34,9 +37,11 @@ const skillBehaviors = {
         //체력 0되면 게임 종료 콜
         target.shieldRate = 0; //뎀감은 한턴 적용
     },
+
     defense: (user, _, skill) => {
         user.shieldRate = user.strengthLevel * skill.unitShieldRate;
     },
+
     heal: (user, _, skill) => {
         const healAmount = skill.unitHeal * user.strengthLevel;
         user.hp = Math.min(100, user.hp + healAmount);

@@ -1,17 +1,31 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Net;
 using UnityEngine;
-using UnityEngine.Networking;
+using UnityEngine.UI;
+using DataForm;
+using Newtonsoft.Json;
 
 public class GameStartUI : MonoBehaviour
 {
-    
+    private BrowserRequest browserRequest;
+    private int requestId;
+
+    //UI 요소
+    public Button gameStartButton;
+    public Text scoreText;
+    public Text rankingText;
+
+    private void Awake()
+    {
+        browserRequest = new BrowserRequest();
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        gameStartButton.onClick.AddListener(() =>
+        {
+            int requestId = browserRequest.StartRequest("POST", "/game/match/join");
+        });
     }
 
     // Update is called once per frame
@@ -22,15 +36,26 @@ public class GameStartUI : MonoBehaviour
 
     public void loadGameStartUI()
     {
-        //서버에게 해당 유저의 정보 요청
-        UnityWebRequest webRequest = UnityWebRequest.Get("https://localhost/game/userGameData");
-        if(webRequest.result == UnityWebRequest.Result.Success)
+        //서버에게 해당 유저의 정보 요청, 5초까지 기다림
+        int requestId = browserRequest.StartRequest("GET", "/game/test");
+        StartCoroutine(browserRequest.waitForResponse(requestId, 5.0f, (response) =>
         {
-            //success
-        }
-        else
-        {
-            //error
-        }
+            if (response != null)
+            {
+                var userGameData = JsonConvert.DeserializeObject<UserGameData>(response.body);
+                setGameStartUI(userGameData.game1Score, userGameData.ranking);
+            }
+            else
+            {
+                Debug.Log("정보 조회에 실패했습니다.");
+            }
+
+        }));
+    }
+
+    private void setGameStartUI(int score, long ranking)
+    {
+        scoreText.text = score.ToString();
+        rankingText.text = ranking.ToString();
     }
 }

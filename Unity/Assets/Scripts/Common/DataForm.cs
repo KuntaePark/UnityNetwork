@@ -60,8 +60,8 @@ namespace DataForm
     [System.Serializable]
     public class PlayerData
     {
-        //±âº» ¼öÄ¡
-        public string id = ""; //ÇÃ·¹ÀÌ¾î ID, ¼­¹ö·ÎºÎÅÍ ¹èÁ¤¹ŞÀ½
+        //ê¸°ë³¸ ìˆ˜ì¹˜
+        public string id = ""; //í”Œë ˆì´ì–´ ID, ì„œë²„ë¡œë¶€í„° ë°°ì •ë°›ìŒ
         public int idx = -1;
         public float hp = -1;
         public float mp = -1;
@@ -69,7 +69,7 @@ namespace DataForm
         public bool isActionSelected = false;
         public string currentAction = "";
 
-        //´Ü¾î °ü·Ã
+        //ë‹¨ì–´ ê´€ë ¨
         public wordData[] words = null;
         public int correctIdx = -1;
 
@@ -78,10 +78,10 @@ namespace DataForm
             string wordString = "";
             if(words != null && isActionSelected)
             {
-                wordString += $"ÇöÀç ´Ü¾î: {words[correctIdx].word_text} \n";
+                wordString += $"í˜„ì¬ ë‹¨ì–´: {words[correctIdx].word_text} \n";
                 for(int i = 0; i < words.Length; i++)
                 {
-                    wordString += $"¶æ{i}: {words[i].meaning}\n";
+                    wordString += $"ëœ»{i}: {words[i].meaning}\n";
                 }
             }
 
@@ -93,6 +93,16 @@ namespace DataForm
                 $"Is Action Selected: {isActionSelected}";
 
         }
+    }
+
+    [System.Serializable]
+    public class UserGameData
+    {
+        public int game1Score;
+        public int game2Score;
+        public int gold;
+        public long ranking;
+        public float rankingPercent;
     }
 }
 
