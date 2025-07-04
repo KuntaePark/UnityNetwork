@@ -3,12 +3,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using DataForm;
 using Newtonsoft.Json;
+using UnityEngine.Rendering.Universal.Internal;
 
 public class GameStartUI : MonoBehaviour
 {
     private BrowserRequest browserRequest;
-    private int requestId;
-
+    public MatchClient matchClient;
+    
     //UI 요소
     public Button gameStartButton;
     public Text scoreText;
@@ -25,6 +26,21 @@ public class GameStartUI : MonoBehaviour
         gameStartButton.onClick.AddListener(() =>
         {
             int requestId = browserRequest.StartRequest("POST", "/game/match/join");
+            StartCoroutine(browserRequest.waitForResponse(requestId, 5.0f, (response) =>
+            {
+                if (response != null)
+                {
+                    long userId = JsonConvert.DeserializeObject<long>(response.body);
+                    //매칭 요청 인증이 완료되었으므로 매칭 서버 연결 시작
+                    DataManager.Instance.id = userId;
+                    matchClient.startConnection();
+                }
+                else
+                {
+                    Debug.Log("정보 조회에 실패했습니다.");
+                }
+
+            }));
         });
     }
 

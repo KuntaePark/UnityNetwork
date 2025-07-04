@@ -2835,9 +2835,6 @@ MonoBehaviour:
   gameState:
     state: ready
   myIdx: -1
-  player1Data: {fileID: 0}
-  player2Data: {fileID: 0}
-  commonData: {fileID: 0}
 --- !u!4 &1621002424
 Transform:
   m_ObjectHideFlags: 0
@@ -2847,7 +2844,7 @@ Transform:
   m_GameObject: {fileID: 1621002422}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1197.708, y: 536.80005, z: 0.75171155}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

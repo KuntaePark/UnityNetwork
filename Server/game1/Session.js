@@ -3,15 +3,18 @@
  */
 const {Player} = require('./Player');
 const {deltaTime} = require('./GameLogic');
-const {makePacket} = require('./Packet');
+const {makePacket} = require('../common/Packet');
+
+/* [sessionId] : [Session] */
+const sessions = new Map(); //게임 세션
 
 const timeLimit = 99; //in seconds
 
 class Session {
     static sessionCount = 0;
 
-    constructor(pws1, pws2) {
-        //매칭 서버로부터 두 플레이어의 아이디를 받아 세션 생성
+    constructor(id1, id2) {
+        //매칭 서버로부터 두 플레이어의 아이디를 받아 세션 생성, 연결은 별도 지정
         this.id = (Session.sessionCount++).toString();
         this.intervalId = null;
 
@@ -23,13 +26,37 @@ class Session {
         this.usedWords = [];   //해당 라운드에서 사용된 단어들
         
         //상대 판정 쉽게 하기 위해 배열로 저장
-        this.players = [new Player(0,pws1, this), new Player(1, pws2, this)]; //2인
+        this.players = [new Player(0,id1, this), new Player(1, id2, this)]; //2인
 
-        //각 플레이어에게 세션 생성 알림 전달
+        //10초 이내에 두 플레이어 모두 접속하지 않았을 경우, 세션 파기
+        setTimeout(() => {
+            if(!this.isBothConnected()) {
+                //세션 삭제
+                console.log(`session ${this.id} closed due to connection timeout.`);
+                sessions.delete(this.id);
+                this.close();
+            }
+        }, 10000);
+    }
+
+    isBothConnected() {
+        return this.players[0].socket !== null && 
+        this.players[1].socket !== null;
+    }
+
+    setPlayerConnection(id, ws) {
         for(const player of this.players) {
-            const payload = {sessionId: this.id, idx: player.idx};
-            const message = makePacket('createSession', payload);
-            player.socket.send(message);
+            if(player.id === id) {
+                player.socket = ws;
+                player['sessionId'] = this.id;
+                console.log(`player connection set.`);
+                ws.send(makePacket('session_connect', player.idx));
+            }
+        }
+        //두 플레이어 모두 접속 완료 시, 게임 준비 상태? 또는 게임 시작?
+        if(this.isBothConnected()) {
+            console.log('both players ready.');
+            this.gameStart();
         }
     }
 
@@ -124,4 +151,4 @@ class Session {
     }
 }
 
-module.exports = {Session} ;
+module.exports = {Session, sessions} ;

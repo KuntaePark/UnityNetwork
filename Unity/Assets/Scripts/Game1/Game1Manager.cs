@@ -12,25 +12,22 @@ public class Game1Manager : MonoBehaviour
     [System.Serializable]
     public class GameState
     {
-        public long startTime { get; set; } //°ÔÀÓ ½ÃÀÛ ½Ã°£
+        public long startTime { get; set; } //ê²Œì„ ì‹œì‘ ì‹œê°„
         public string state = "ready";
-        public PlayerData[] players { get; set; } = new PlayerData[2]; //ÇÃ·¹ÀÌ¾î µ¥ÀÌÅÍ ¹è¿­
+        public PlayerData[] players { get; set; } = new PlayerData[2]; //í”Œë ˆì´ì–´ ë°ì´í„° ë°°ì—´
     }
 
-    public GameClient1 gameClient; //°ÔÀÓ Å¬¶óÀÌ¾ğÆ® ½ºÅ©¸³Æ® ÂüÁ¶
-    public GameState gameState; //°ÔÀÓ »óÅÂ µ¥ÀÌÅÍ
+    public GameClient1 gameClient; //ê²Œì„ í´ë¼ì´ì–¸íŠ¸ ìŠ¤í¬ë¦½íŠ¸ ì°¸ì¡°
+    public GameState gameState; //ê²Œì„ ìƒíƒœ ë°ì´í„°
     public int myIdx = -1;
 
-    public const int timeLimit = 99; //°ÔÀÓ ½Ã°£ Á¦ÇÑ(ÃÊ)
+    public const int timeLimit = 99; //ê²Œì„ ì‹œê°„ ì œí•œ(ì´ˆ)
 
-    public Text player1Data;
-    public Text player2Data;
-    public Text commonData;
     // Start is called before the first frame update
     void Start()
     {
-        gameState.players[0] = new PlayerData(); // ÇÃ·¹ÀÌ¾î 1 ÃÊ±âÈ­
-        gameState.players[1] = new PlayerData(); // ÇÃ·¹ÀÌ¾î 2 ÃÊ±âÈ­
+        gameState.players[0] = new PlayerData(); // í”Œë ˆì´ì–´ 1 ì´ˆê¸°í™”
+        gameState.players[1] = new PlayerData(); // í”Œë ˆì´ì–´ 2 ì´ˆê¸°í™”
     }
 
     // Update is called once per frame
@@ -41,7 +38,7 @@ public class Game1Manager : MonoBehaviour
 
     public void UpdateGameState(string payload)
     {
-        //°ÔÀÓ »óÅÂ ¾÷µ¥ÀÌÆ® Ã³¸®
+        //ê²Œì„ ìƒíƒœ ì—…ë°ì´íŠ¸ ì²˜ë¦¬
 
         gameState = JsonConvert.DeserializeObject<GameState>(payload);
     }
@@ -52,7 +49,7 @@ public class Game1Manager : MonoBehaviour
     {
         if (gameState.startTime == 0)
         {
-            //°ÔÀÓÀÌ ½ÃÀÛµÇÁö ¾Ê¾ÒÀ¸¸é 0 ¹İÈ¯
+            //ê²Œì„ì´ ì‹œì‘ë˜ì§€ ì•Šì•˜ìœ¼ë©´ 0 ë°˜í™˜
             return 0;
         }
         DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -61,7 +58,7 @@ public class Game1Manager : MonoBehaviour
 
     public void endGame(int winnerIdx)
     {
-        //°ÔÀÓ Á¾·á Ã³¸®
+        //ê²Œì„ ì¢…ë£Œ ì²˜ë¦¬
         Debug.Log("Game ended. Winner index: " + winnerIdx);
         gameState.startTime = 0;
         gameState.state = "end";

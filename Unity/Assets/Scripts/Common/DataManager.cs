@@ -11,6 +11,8 @@ public class DataManager : MonoBehaviour
         public Item item;
     }
 
+    public long id = -1;
+
     public static DataManager Instance { get; private set; }
 
     //inventory data of user

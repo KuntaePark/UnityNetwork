@@ -93,7 +93,7 @@ setInterval(() => {
       const id = exitPlayer.playerId;
       console.log("announcing exit player "+id+" in lobby "+lobbyId);
 
-
+      if(!lobbies[lobbyId]) return;
       const lobbyMembers = lobbies[lobbyId]["members"];
       const packet = JSON.stringify({type: 'playerExit', payload: id })
       for(memberId in lobbyMembers) {

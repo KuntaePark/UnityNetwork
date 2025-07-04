@@ -6,22 +6,23 @@ using Newtonsoft.Json;
 using DataForm;
 
 /*
- * °ÔÀÓ 1 Àü¿ë À¥¼ÒÄÏ ¿¬°á
+ * ê²Œì„ 1 ì „ìš© ì›¹ì†Œì¼“ ì—°ê²°
  */
 
 public class GameClient1 : WebSocketClient
 {
-    private string sessionId; //¼­¹ö·ÎºÎÅÍ ¹èÁ¤¹ŞÀº ¼¼¼Ç ID
+    public string id { get; private set; } //í”Œë ˆì´ì–´ ID (ì„œë²„ë¡œë¶€í„° ë°°ì •ë°›ìŒ)
+    public Game1Manager game1Manager; //ê²Œì„ ë§¤ë‹ˆì € ìŠ¤í¬ë¦½íŠ¸ ì°¸ì¡°
 
-    public string id { get; private set; } //ÇÃ·¹ÀÌ¾î ID (¼­¹ö·ÎºÎÅÍ ¹èÁ¤¹ŞÀ½)
-    public Game1Manager game1Manager; //°ÔÀÓ ¸Å´ÏÀú ½ºÅ©¸³Æ® ÂüÁ¶
-
+    private void Awake()
+    {
+        //ì„œë²„ ì—°ê²°
+        startConnection("ws://192.168.0.51:7778");
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        //¼­¹ö ¿¬°á
-        startConnection("ws://192.168.0.51:7778");
     }
 
     // Update is called once per frame
@@ -29,27 +30,27 @@ public class GameClient1 : WebSocketClient
     {
     }
 
+    public override void handleOpen()
+    {
+        Send("auth",JsonConvert.SerializeObject(DataManager.Instance.id));
+    }
+
     public override void handlePacket(string type, string payload)
     {
         switch (type) 
         {
-            case "connect":
-                id = JsonConvert.DeserializeObject<string>(payload);
-                break;
-            case "createSession":
-                //¼­¹ö·ÎºÎÅÍ ¼¼¼Ç ID¸¦ ¹Ş¾ÒÀ» ¶§
-                Dictionary<string, string> sessionData = JsonConvert.DeserializeObject<Dictionary<string, string>>(payload);
-                sessionId = sessionData["sessionId"];
-                game1Manager.myIdx = int.Parse(sessionData["idx"]);
-                Debug.Log("Session created with ID: " + sessionId + ", my index: "+ game1Manager.myIdx);
+            case "session_connect":
+                //ì„œë²„ë¡œë¶€í„° ì„¸ì…˜ IDë¥¼ ë°›ì•˜ì„ ë•Œ
+                int idx = JsonConvert.DeserializeObject<int>(payload);
+                game1Manager.myIdx = idx;
                 break;
             case "gameState":
-                //°ÔÀÓ »óÅÂ ¾÷µ¥ÀÌÆ®¸¦ ¹Ş¾ÒÀ» ¶§
+                //ê²Œì„ ìƒíƒœ ì—…ë°ì´íŠ¸ë¥¼ ë°›ì•˜ì„ ë•Œ
                 //Debug.Log("received: " + payload);
                 game1Manager.UpdateGameState(payload);
                 break;
             case "gameEnd":
-                //°ÔÀÓ Á¾·á ¸Ş½ÃÁö¸¦ ¹Ş¾ÒÀ» ¶§
+                //ê²Œì„ ì¢…ë£Œ ë©”ì‹œì§€ë¥¼ ë°›ì•˜ì„ ë•Œ
                 Debug.Log("Game ended: " + payload);
                 int winnerIdx = JsonConvert.DeserializeObject<int>(payload);
                 game1Manager.endGame(winnerIdx);

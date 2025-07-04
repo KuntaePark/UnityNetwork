@@ -10,11 +10,10 @@ const wordDB = new WordDB();
 wordDB.getWordData();
 
 class Player {
-    constructor(idx, pws, session) {
-        this.id = pws.id;
+    constructor(idx, id, session) {
+        this.id = id;
         this.idx = idx; //1p인지 2p인지 인덱스
-        this.socket = pws; 
-        pws['sessionId'] = session.id;
+        this.socket = null; 
         this.session = session;
         this.inputData = null;
         
