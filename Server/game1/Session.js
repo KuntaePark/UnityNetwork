@@ -126,6 +126,7 @@ class Session {
             this.state = 'end';
             const message = makePacket('gameEnd', winner);
             this.broadcast(message);
+            this.close();
         }
     }
 
@@ -138,7 +139,10 @@ class Session {
     }
 
     close() {
+        console.log(`closing session ${id}`);
         if(this.intervalId) clearInterval(this.intervalId);
+        sessions.delete(this.id);
+        
     }
 
     //게임 상태 전송용

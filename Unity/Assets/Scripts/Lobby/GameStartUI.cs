@@ -12,12 +12,14 @@ public class GameStartUI : MonoBehaviour
     
     //UI 요소
     public Button gameStartButton;
+    public Text gameStartButtonText;
     public Text scoreText;
     public Text rankingText;
 
     private void Awake()
     {
         browserRequest = new BrowserRequest();
+        gameStartButtonText.text = "게임 시작!";
     }
 
     // Start is called before the first frame update
@@ -32,6 +34,8 @@ public class GameStartUI : MonoBehaviour
                 {
                     long userId = JsonConvert.DeserializeObject<long>(response.body);
                     //매칭 요청 인증이 완료되었으므로 매칭 서버 연결 시작
+                    //매칭 중 UI로 변경
+                    gameStartButtonText.text = "매칭 중...\n(여기를 눌러 취소)";
                     DataManager.Instance.id = userId;
                     matchClient.startConnection();
                 }
@@ -39,7 +43,6 @@ public class GameStartUI : MonoBehaviour
                 {
                     Debug.Log("정보 조회에 실패했습니다.");
                 }
-
             }));
         });
     }
